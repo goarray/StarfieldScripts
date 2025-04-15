@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).parent.parent  # Get the parent of the 'src' folder
 # Path adjustments based on new directory structure
 TEMPLATE_PATH = SCRIPT_DIR / "PlanetBiomes.biom"      # /src/PlanetBiomes.biom
 CSV_PATH = SCRIPT_DIR.parent / "PlanetBiomes.csv"     # /PlanetBiomes.csv (one level up)
-OUTPUT_DIR = SCRIPT_DIR.parent / "GeneratedBiomes"    # /GeneratedBiomes/
+OUTPUT_DIR = SCRIPT_DIR.parent / "PlanetBiomes_Generated"    # /PlanetBiomes_Generated/
 
 # Define .biom file structure
 CsSF_Biom = Struct(
