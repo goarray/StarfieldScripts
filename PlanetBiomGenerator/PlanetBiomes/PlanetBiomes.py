@@ -13,9 +13,9 @@ SCRIPT_DIR = Path(__file__).parent
 BASE_DIR = Path(__file__).parent.parent  # Get the parent of the 'src' folder
 
 # Path adjustments based on new directory structure
-TEMPLATE_PATH = SCRIPT_DIR / "PlanetBiomes.biom"      # /src/PlanetBiomes.biom
-CSV_PATH = SCRIPT_DIR.parent / "PlanetBiomes.csv"     # /PlanetBiomes.csv (one level up)
-OUTPUT_DIR = SCRIPT_DIR.parent / "PlanetBiomes_Generated"    # /PlanetBiomes_Generated/
+TEMPLATE_PATH = SCRIPT_DIR / "PlanetBiomes.biom"      # PlanetBiomes.biom
+CSV_PATH = SCRIPT_DIR / "xEditOutput" / "PlanetBiomes.csv"     # PlanetBiomes.csv
+OUTPUT_DIR = SCRIPT_DIR 
 
 # Define .biom file structure
 CsSF_Biom = Struct(
@@ -36,9 +36,11 @@ CsSF_Biom = Struct(
 )
 
 def load_planet_biomes(csv_path):
-    """Load PlanetBiomes.csv and return a dict mapping planet names to lists of FormIDs."""
+    """Load PlanetBiomes.csv and return (plugin_name, planet_to_biomes dict)."""
     planet_biomes = {}
     with open(csv_path, newline='') as csvfile:
+        first_line = csvfile.readline().strip()
+        plugin_name = first_line.strip()
         reader = csv.DictReader(csvfile, fieldnames=["PlanetName", "BIOM_FormID", "BIOM_EditorID"])
         next(reader, None)  # Skip header row
         for row in reader:
@@ -48,7 +50,7 @@ def load_planet_biomes(csv_path):
                 planet_biomes.setdefault(planet, []).append(form_id)
             except ValueError:
                 print(f"Warning: Invalid FormID '{row['BIOM_FormID']}' for planet '{planet}'. Skipping.")
-    return planet_biomes
+    return plugin_name, planet_biomes
 
 class BiomFile:
     def __init__(self):
@@ -102,7 +104,9 @@ def clone_biom(biom):
     return new
 
 def main():
-    planet_biomes = load_planet_biomes(CSV_PATH)
+    plugin_name, planet_biomes = load_planet_biomes(CSV_PATH)
+    output_subdir = OUTPUT_DIR / plugin_name
+    output_subdir.mkdir(parents=True, exist_ok=True)
     template = BiomFile()
     template.load(TEMPLATE_PATH)
 
@@ -112,7 +116,7 @@ def main():
         print(f"Processing {planet} with {len(new_ids)} biome(s)")
         new_biom = clone_biom(template)
         new_biom.overwrite_biome_ids(new_ids)
-        out_path = OUTPUT_DIR / f"{planet}.biom"
+        out_path = output_subdir / f"{planet}.biom"
         new_biom.save(out_path)
 
 if __name__ == "__main__":
